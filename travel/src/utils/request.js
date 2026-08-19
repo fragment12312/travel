@@ -22,7 +22,7 @@ request.interceptors.request.use(
 //相应拦截器
 request.interceptors.response.use(
   response => {
-    return response
+    return response.data
   },
   error => {
     return Promise.reject(error)

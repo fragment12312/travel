@@ -7,6 +7,19 @@
       <div v-if="isLoading" class="loading-container" style="margin-top: 100px;">
         <van-loading size="48px" type="spinner">正在生成旅游规划...</van-loading>
       </div>
+      <div v-else-if="errorMsg">
+        <van-empty :description="errorMsg">
+          <van-button type="primary" @click="fetchTripData">重试</van-button>
+        </van-empty>
+      </div>
+      <template v-else-if="tripData && tripData.success != false">
+        <div class="card overview-card">
+          <div class="trip-header">
+            <h2>{{ tripData.city }} · {{ tripData.days }}天行程</h2>
+            <div class="trip-budget">预算：{{ tripData.totalBudget }}元</div>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -20,6 +33,7 @@ const router = useRouter()
 const route = useRoute()
 
 const isLoading = ref(true)
+
 const errorMsg = ref('')
 
 const fromData = reactive({
@@ -27,6 +41,9 @@ const fromData = reactive({
   budget: null,
   days: null
 })
+
+const tripData = ref({})
+
 
 const onBack = () => {
   router.back()
@@ -51,6 +68,11 @@ const fetchTripData = async () => {
       days: Number(fromData.days)
     })
     console.log(res)
+    if (res && res.success != false) {
+      tripData.value = res
+    } else {
+      errorMsg.value = res.error || '生成失败，请稍后重试'
+    }
   } catch (err) {
     errorMsg.value = friendlyError(err)
     console.error('请求失败：', errorMsg.value)
@@ -74,108 +96,111 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.overview-card {
-  margin-bottom: 16px;
-}
+  .page-header{
+    height: 46px;
+  }
+  .overview-card {
+    margin-bottom: 16px;
+  }
 
-.trip-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  .trip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-.trip-header h2 {
-  font-size: 20px;
-  color: #323233;
-  margin: 0;
-}
+  .trip-header h2 {
+    font-size: 20px;
+    color: #323233;
+    margin: 0;
+  }
 
-.trip-budget {
-  font-size: 16px;
-  color: #ee0a24;
-  font-weight: 600;
-}
+  .trip-budget {
+    font-size: 16px;
+    color: #ee0a24;
+    font-weight: 600;
+  }
 
-.trip-collapse {
-  margin-bottom: 16px;
-}
+  .trip-collapse {
+    margin-bottom: 16px;
+  }
 
-.day-schedule {
-  padding: 8px 0;
-}
+  .day-schedule {
+    padding: 8px 0;
+  }
 
-.schedule-section {
-  margin-bottom: 16px;
-}
+  .schedule-section {
+    margin-bottom: 16px;
+  }
 
-.schedule-section:last-child {
-  margin-bottom: 0;
-}
+  .schedule-section:last-child {
+    margin-bottom: 0;
+  }
 
-.section-label {
-  font-size: 14px;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: inline-block;
-  margin-bottom: 8px;
-}
+  .section-label {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
 
-.section-label.morning {
-  background: #fff7e6;
-  color: #fa8c16;
-}
+  .section-label.morning {
+    background: #fff7e6;
+    color: #fa8c16;
+  }
 
-.section-label.afternoon {
-  background: #e6f7ff;
-  color: #1890ff;
-}
+  .section-label.afternoon {
+    background: #e6f7ff;
+    color: #1890ff;
+  }
 
-.section-label.evening {
-  background: #f6ffed;
-  color: #52c41a;
-}
+  .section-label.evening {
+    background: #f6ffed;
+    color: #52c41a;
+  }
 
-.budget-card,
-.tips-card,
-.warnings-card {
-  margin-bottom: 16px;
-}
+  .budget-card,
+  .tips-card,
+  .warnings-card {
+    margin-bottom: 16px;
+  }
 
-.tips-list,
-.warnings-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+  .tips-list,
+  .warnings-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
 
-.tips-list li,
-.warnings-list li {
-  padding: 8px 0;
-  color: #666;
-  font-size: 14px;
-  border-bottom: 1px solid #f5f5f5;
-}
+  .tips-list li,
+  .warnings-list li {
+    padding: 8px 0;
+    color: #666;
+    font-size: 14px;
+    border-bottom: 1px solid #f5f5f5;
+  }
 
-.tips-list li:last-child,
-.warnings-list li:last-child {
-  border-bottom: none;
-}
+  .tips-list li:last-child,
+  .warnings-list li:last-child {
+    border-bottom: none;
+  }
 
-.detail-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 12px 16px;
-  background: #fff;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
-  max-width: 750px;
-  margin: 0 auto;
-}
+  .detail-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 16px;
+    background: #fff;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+    max-width: 750px;
+    margin: 0 auto;
+  }
 
-.error-card {
-  text-align: center;
-  padding: 40px 16px;
-}
+  .error-card {
+    text-align: center;
+    padding: 40px 16px;
+  }
 </style>
