@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/travel/**)",
+      "Read(//d/travel/src/views/**)",
+      "Read(//d/travel/src/router/**)",
+      "Read(//d/travel/src/utils/**)",
+      "Bash(node -e \"const p=require\\('./package-lock.json'\\).packages; for \\(const k of Object.keys\\(p\\)\\) { if\\(k.includes\\('@langchain/openai'\\)||k.includes\\('@langchain/core'\\)||k.includes\\('node_modules/openai'\\)||k.includes\\('axios'\\)\\) console.log\\(k, p[k].version\\) }\")",
+      "Read(//d/travel/node_modules/axios/**)",
+      "Bash(netstat -ano)",
+      "Bash(curl -s -o /dev/null -w \"OPTIONS 状态码: %{http_code}\\\\n\" -X OPTIONS http://127.0.0.1:3300/api/travel/recommend -H \"Origin: http://localhost:5173\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: content-type\" --max-time 5)",
+      "Bash(curl -s -o /dev/null -w \"POST /api/heartbeat 状态码: %{http_code}  耗时: %{time_total}s\\\\n\" -X POST http://127.0.0.1:3300/api/heartbeat -H \"Content-Type: application/json\" -d '{}' --max-time 10)",
+      "Bash(curl -s -D - -o /dev/null -X OPTIONS http://127.0.0.1:3300/api/travel/recommend -H \"Origin: http://localhost:5173\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: content-type\" --max-time 5)",
+      "Read(//d/travel/src/**)",
+      "Read(//d/travel/public/**)",
+      "Read(//d/travel/src/styles/**)",
+      "Bash(git -C d:/travel-II ls-files)",
+      "Bash(git verify-pack *)",
+      "Bash(git --git-dir=/d/travel-II/.git cat-file -p f840a80251a396b185bad005a5e0d2bce9e4d151)"
+    ],
+    "additionalDirectories": [
+      "d:\\travel\\src\\views"
+    ]
+  }
+}
