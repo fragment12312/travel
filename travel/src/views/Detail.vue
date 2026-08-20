@@ -13,13 +13,73 @@
         </van-empty>
       </div>
       <template v-else-if="tripData && tripData.success != false">
+        <!-- 总览 -->
         <div class="card overview-card">
           <div class="trip-header">
             <h2>{{ tripData.city }} · {{ tripData.days }}天行程</h2>
             <div class="trip-budget">预算：{{ tripData.totalBudget }}元</div>
           </div>
         </div>
+
+        <!-- 每日行程 -->
+        <van-collapse v-model="activeDays" class="trip-collapse">
+          <van-collapse-item
+            v-for="day in tripData.dailyItinerary"
+            :key="day.day"
+            :name="day.day"
+            :title="day.date || ('第' + day.day + '天')"
+          >
+            <div class="day-schedule">
+              <div v-for="slot in timeSlots" :key="slot.key" class="schedule-section">
+                <template v-if="day[slot.key]">
+                  <span class="section-label" :class="slot.key">{{ slot.label }}</span>
+                  <div class="spot-name">{{ day[slot.key].spot }}</div>
+                  <div class="spot-tags">
+                    <van-tag v-if="day[slot.key].duration" plain type="primary">{{ day[slot.key].duration }}</van-tag>
+                    <van-tag v-if="day[slot.key].ticket" plain type="warning">{{ day[slot.key].ticket }}</van-tag>
+                    <van-tag v-if="day[slot.key].transportation" plain type="success">{{ day[slot.key].transportation }}</van-tag>
+                  </div>
+                  <div v-if="day[slot.key].description" class="spot-desc">{{ day[slot.key].description }}</div>
+                </template>
+              </div>
+            </div>
+          </van-collapse-item>
+        </van-collapse>
+
+        <!-- 预算分配 -->
+        <div v-if="tripData.budgetBreakdown" class="card budget-card">
+          <h3 class="card-title">预算分配</h3>
+          <van-cell-group :border="false">
+            <van-cell
+              v-for="item in budgetItems"
+              :key="item.key"
+              :title="item.label"
+              :value="formatMoney(tripData.budgetBreakdown[item.key])"
+            />
+          </van-cell-group>
+        </div>
+
+        <!-- 小贴士 -->
+        <div v-if="tripData.tips && tripData.tips.length" class="card tips-card">
+          <h3 class="card-title">小贴士</h3>
+          <ul class="tips-list">
+            <li v-for="(tip, i) in tripData.tips" :key="i">{{ tip }}</li>
+          </ul>
+        </div>
+
+        <!-- 注意事项 -->
+        <div v-if="tripData.warnings && tripData.warnings.length" class="card warnings-card">
+          <h3 class="card-title">注意事项</h3>
+          <ul class="warnings-list">
+            <li v-for="(w, i) in tripData.warnings" :key="i">{{ w }}</li>
+          </ul>
+        </div>
       </template>
+    </div>
+    <div class="detail-footer" v-if="tripData && tripData.success !== false">
+      <van-button type="primary" size="large" round @click="goToChat" class="primary-button">
+        咨询 AI 助手
+      </van-button>
     </div>
   </div>
 </template>
@@ -42,12 +102,43 @@ const fromData = reactive({
   days: null
 })
 
-const tripData = ref({})
+const tripData = ref(null)
 
+const activeDays = ref([])
+
+// 一天内的三个时段
+const timeSlots = [
+  { key: 'morning', label: '上午' },
+  { key: 'afternoon', label: '下午' },
+  { key: 'evening', label: '晚上' }
+]
+
+// 预算分配明细项
+const budgetItems = [
+  { key: 'accommodation', label: '住宿' },
+  { key: 'food', label: '餐饮' },
+  { key: 'transportation', label: '交通' },
+  { key: 'tickets', label: '门票' },
+  { key: 'other', label: '其他' }
+]
+
+// 金额格式化：数字补“元”，非数字原样返回
+const formatMoney = (v) => {
+  if (v === null || v === undefined || v === '') return '-'
+  const n = Number(v)
+  return Number.isFinite(n) ? `${n}元` : String(v)
+}
 
 const onBack = () => {
   router.back()
 }
+
+// 咨询AI助手
+const goToChat = () => {
+  router.push({ name: 'Chat' })
+}
+
+
 
 // 把底层报错翻译成用户能看懂的话
 const friendlyError = (err) => {
@@ -70,6 +161,9 @@ const fetchTripData = async () => {
     console.log(res)
     if (res && res.success != false) {
       tripData.value = res
+      // 默认展开第一天
+      const days = res.dailyItinerary || []
+      activeDays.value = days.length ? [days[0].day] : []
     } else {
       errorMsg.value = res.error || '生成失败，请稍后重试'
     }
@@ -125,6 +219,13 @@ onMounted(() => {
     margin-bottom: 16px;
   }
 
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #323233;
+    margin: 0 0 12px;
+  }
+
   .day-schedule {
     padding: 8px 0;
   }
@@ -159,6 +260,26 @@ onMounted(() => {
   .section-label.evening {
     background: #f6ffed;
     color: #52c41a;
+  }
+
+  .spot-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #323233;
+    margin-bottom: 8px;
+  }
+
+  .spot-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .spot-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 20px;
   }
 
   .budget-card,

@@ -13,7 +13,9 @@
       "Bash(node -e \"const fs=require\\('fs'\\); const css=fs.readFileSync\\('d:/travel/node_modules/vant/lib/index.css','utf8'\\); const lines=css.split\\('}'\\); const popupBg=lines.find\\(l=>l.includes\\('.van-popup'\\)&&l.includes\\('background'\\)\\); const toastBg=lines.find\\(l=>l.includes\\('.van-toast'\\)&&l.includes\\('background'\\)\\); console.log\\('POPUP:', popupBg?.trim\\(\\)\\); console.log\\('TOAST:', toastBg?.trim\\(\\)\\);\")",
       "Bash(node -e ' *)",
       "Bash(node -e \"const pkg=require\\('d:/travel/node_modules/@vant/use/package.json'\\); console.log\\('@vant/use version:', pkg.version\\);\")",
-      "Bash(node -e \"const pkg=require\\('d:/travel/node_modules/@vant/popperjs/package.json'\\); console.log\\('@vant/popperjs version:', pkg.version\\);\")"
+      "Bash(node -e \"const pkg=require\\('d:/travel/node_modules/@vant/popperjs/package.json'\\); console.log\\('@vant/popperjs version:', pkg.version\\);\")",
+      "Read(//c/Users/Lenovo/Desktop/travel-all/travel-II/src/services/**)",
+      "Read(//c/Users/Lenovo/Desktop/travel-all/travel-II/src/route/**)"
     ]
   }
 }
