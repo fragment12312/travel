@@ -19,6 +19,8 @@ request.interceptors.request.use(
   }
 )
 
+
+
 //相应拦截器
 request.interceptors.response.use(
   response => {
@@ -35,4 +37,37 @@ export function post(url, data) {
 
 export function get(url, params) {
   return request.get(url, { params })
+}
+
+//处理流式响应
+export async function fetchStream(url, data, onChunk, onComplete, onError) {
+  //创建一个控制器
+  const controller = new AbortController()
+
+  try {
+    const response = await fetch(`http://127.0.0.1:3300/api/travel/${url}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+        signal: controller.signal
+  })
+  //获取响应体
+    const reader = response.body.getReader()
+  //创建一个解码器
+    const decoder = new TextDecoder()
+
+    while(true){
+      const { done, value } = await reader.read()
+      if(done) break
+      const chunk = decoder.decode(value, { stream: true })
+      //交给上层处理每个片段
+      if (onChunk) onChunk(chunk)
+    }
+    if (onComplete) onComplete()
+
+  } catch (error) {
+    if (onError) onError(error.message)
+  }
 }

@@ -5,6 +5,7 @@
       <van-nav-bar
         title="AI旅游助手"
         left-arrow
+        fixed
         @click-left="OnBack"
         left-text="返回"
       />
@@ -38,9 +39,10 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { fetchStream } from '../utils/request'
 
 const router = useRouter()
 
@@ -65,7 +67,20 @@ const handleClick = (q) => {
 const inputMessage = ref('')
 
 const sendMessage = () => {
-  
+  if (!inputMessage.value.trim()) return
+  fetchStream(
+    'chat',
+    { message: inputMessage.value },
+    (chunk) => {
+      console.log('收到片段：', chunk)
+    },
+    () => {
+      inputMessage.value = ''
+    },
+    (err) => {
+      console.error('请求失败：', err)
+    }
+  )
 }
 
 const messages = ref([])
