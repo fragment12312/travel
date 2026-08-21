@@ -5,12 +5,11 @@
       <van-nav-bar
         title="AI旅游助手"
         left-arrow
-        fixed
         @click-left="OnBack"
         left-text="返回"
       />
     </div>
-    <div class="chat-container">
+    <div class="chat-container" ref="chatContainer">
       <div v-if="messages.length === 0" class="chat-empty">
         <van-empty 
           description="开始和 AI 助手对话吧！"
@@ -20,6 +19,13 @@
           <van-tag @click="handleClick(q)" v-for="q in quickQuestions" size="large" :key="q" mark class="quick-tag">
             {{ q }}
           </van-tag>
+        </div>
+      </div>
+      <div v-else class="message-list">
+        <ChatBubble v-for="msg in messages" :key="msg.id" :message="msg" />
+        <div class="streaming-indicator" v-if="streaming">
+          <van-loading type="spinner" size="20px" />
+          <span>正在思考中...</span>
         </div>
       </div>
     </div>
@@ -40,11 +46,31 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref,onMounted,nextTick } from 'vue'
+import { useRouter,useRoute } from 'vue-router'
 import { fetchStream } from '../utils/request'
+import { showToast } from '../utils/toast'
+import ChatBubble from '../components/ChatBubble.vue'
+
 
 const router = useRouter()
+const route = useRoute()
+
+
+const chatContainer = ref(null)
+const messages = ref([])
+const inputMessage = ref('')
+const streaming = ref(false)
+
+//置底方法
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (chatContainer.value) {
+      chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+    }
+  })
+}
+
 
 const quickQuestions = ref([
   '北京有哪些必去的景点？',
@@ -57,33 +83,84 @@ const OnBack = () => {
   router.back()
 }
 
-const handleClick = (q) => {
+//添加用户消息
+const addUserMessage = (content) => {
   messages.value.push({
+    id: Date.now(),
     role: 'user',
-    content: q
+    content,
+    timestamp: new Date().toLocaleString()
   })
 }
 
-const inputMessage = ref('')
+//点击快捷问题
+const handleClick = (q) => {
+  addUserMessage(q)
+  fetchAIResponse(q)
+}
 
 const sendMessage = () => {
-  if (!inputMessage.value.trim()) return
+  const msg = inputMessage.value.trim()
+  if (!msg) return
+  addUserMessage(msg)
+  inputMessage.value = ''
+  fetchAIResponse(msg)
+}
+
+//请求 AI 回复（流式）
+const fetchAIResponse = (userMsg) => {
+  // 先放一条空的 AI 消息占位，后面流式填充 content
+  messages.value.push({
+    id: Date.now() + 1,
+    role: 'ai',
+    content: '',
+    timestamp: new Date().toLocaleString()
+  })
+
+  const aiMsg = messages.value[messages.value.length - 1]
+  streaming.value = true
+
   fetchStream(
     'chat',
-    { message: inputMessage.value },
-    (chunk) => {
-      console.log('收到片段：', chunk)
+    { message: userMsg },
+    // onChunk：每个 SSE 事件（已在 request.js 里解析成对象）
+    (event) => {
+      if (event && event.type === 'chunk') {
+        aiMsg.content += event.data || ''
+      }
+      if (event && event.type === 'complete' && !aiMsg.content && event.data && event.data.reply) {
+        aiMsg.content = event.data.reply
+      }
+      scrollToBottom()
     },
+    // onComplete：流正常结束
     () => {
-      inputMessage.value = ''
+      if (!aiMsg.content) {
+        aiMsg.content = '（暂无回复）'
+      }
+      streaming.value = false
+      scrollToBottom()
     },
-    (err) => {
-      console.error('请求失败：', err)
+    // onError
+    (errMsg) => {
+      aiMsg.content = `发生了错误：${errMsg}`
+      showToast(`发生了错误：${errMsg}`)
+      streaming.value = false
+      scrollToBottom()
     }
   )
 }
 
-const messages = ref([])
+
+onMounted(() => {
+  if (route.query.scene === 'detail' && route.query.city) {
+    const question = `我想了解${route.query.city}的旅游信息`
+    inputMessage.value = question
+    addUserMessage(question)
+    fetchAIResponse(question)
+  }
+  scrollToBottom()
+})
 </script>
 
 <style scoped>
@@ -91,14 +168,20 @@ const messages = ref([])
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding-bottom: 50px;
+  padding-bottom: 0px !important;
+}
+
+.chat-header {
+  flex-shrink: 0;
 }
 
 .chat-container {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 16px;
-  padding-bottom: 60px;
+  /* 底部留白：给底部的 tabbar(50px) + 固定在它上面的输入区(~50px) 让位 */
+  padding-bottom: 120px;
 }
 
 .chat-empty {

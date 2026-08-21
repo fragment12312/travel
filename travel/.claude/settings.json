@@ -15,7 +15,12 @@
       "Bash(node -e \"const pkg=require\\('d:/travel/node_modules/@vant/use/package.json'\\); console.log\\('@vant/use version:', pkg.version\\);\")",
       "Bash(node -e \"const pkg=require\\('d:/travel/node_modules/@vant/popperjs/package.json'\\); console.log\\('@vant/popperjs version:', pkg.version\\);\")",
       "Read(//c/Users/Lenovo/Desktop/travel-all/travel-II/src/services/**)",
-      "Read(//c/Users/Lenovo/Desktop/travel-all/travel-II/src/route/**)"
+      "Read(//c/Users/Lenovo/Desktop/travel-all/travel-II/src/route/**)",
+      "Bash(cd \"c:\\\\Users\\\\Lenovo\\\\Desktop\\\\travel-all\" && ls -la && echo \"=== travel ===\" && ls travel && echo \"=== 找后端 ===\" && find . -path ./travel/node_modules -prune -o -path ./travel/dist -prune -o -type d -name \"*travel-II*\" -print 2>/dev/null; find . -path \"*/node_modules/*\" -prune -o -name \"*.js\" -print 2>/dev/null | grep -iE \"server|app|index|chat\" | grep -v node_modules | grep -v dist | head -40)",
+      "Read(//c/Users/Lenovo/Desktop/travel-all/**)",
+      "Bash(cd \"c:\\\\Users\\\\Lenovo\\\\Desktop\\\\travel-all\\\\travel-II\" && find src -type f -name \"*.js\" | head -50 && echo \"=== grep chat ===\" && grep -rn \"chat\" src --include=\"*.js\" -l)",
+      "Read(//c/Users/Lenovo/Desktop/travel-all/travel-II/**)",
+      "Read(//c/Users/Lenovo/Desktop/travel-all/travel-II/src/utils/**)"
     ]
   }
 }

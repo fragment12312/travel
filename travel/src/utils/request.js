@@ -39,7 +39,25 @@ export function get(url, params) {
   return request.get(url, { params })
 }
 
-//处理流式响应
+//从单个 SSE 事件块中解析出 data 字段（后端返回的是 data: {JSON}\n\n）
+function parseSSE(event) {
+  const lines = event.split('\n')
+  const dataLines = lines
+    .filter(line => line.startsWith('data:'))
+    .map(line => line.slice(5).trim())
+
+  if (dataLines.length === 0) return null
+
+  const raw = dataLines.join('\n')
+  try {
+    return JSON.parse(raw)
+  } catch (e) {
+    // 非 JSON 内容原样返回
+    return raw
+  }
+}
+
+//处理流式响应（SSE）
 export async function fetchStream(url, data, onChunk, onComplete, onError) {
   //创建一个控制器
   const controller = new AbortController()
@@ -52,19 +70,40 @@ export async function fetchStream(url, data, onChunk, onComplete, onError) {
         },
         body: JSON.stringify(data),
         signal: controller.signal
-  })
-  //获取响应体
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    //获取响应体
     const reader = response.body.getReader()
-  //创建一个解码器
+    //创建一个解码器
     const decoder = new TextDecoder()
+
+    let buffer = ''
 
     while(true){
       const { done, value } = await reader.read()
       if(done) break
-      const chunk = decoder.decode(value, { stream: true })
-      //交给上层处理每个片段
-      if (onChunk) onChunk(chunk)
+      buffer += decoder.decode(value, { stream: true })
+
+      // SSE 事件之间以 \n\n 分隔，最后一段可能不完整，留在 buffer 里
+      const events = buffer.split('\n\n')
+      buffer = events.pop()
+
+      for (const event of events) {
+        const data = parseSSE(event)
+        if (data !== null && onChunk) onChunk(data)
+      }
     }
+
+    // 处理末尾残留的事件
+    if (buffer.trim()) {
+      const data = parseSSE(buffer)
+      if (data !== null && onChunk) onChunk(data)
+    }
+
     if (onComplete) onComplete()
 
   } catch (error) {
