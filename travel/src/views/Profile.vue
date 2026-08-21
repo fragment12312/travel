@@ -45,6 +45,20 @@
       </van-cell-group>
     </div>
     
+    <!-- 账号操作 -->
+    <div class="menu-section">
+      <h3 class="menu-title">账号</h3>
+      <van-cell-group>
+        <van-cell
+          :title="userStore.isLoggedIn ? '退出登录' : '登录账号'"
+          :value="userStore.isLoggedIn ? userName : ''"
+          is-link
+          :icon="userStore.isLoggedIn ? 'log-out' : 'log-in'"
+          @click="handleLoginOrLogout"
+        />
+      </van-cell-group>
+    </div>
+
     <!-- 关于我们 -->
     <div class="menu-section">
       <h3 class="menu-title">关于</h3>
@@ -78,12 +92,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { showToast } from 'vant'
+import { ref, computed } from 'vue'
+import { showConfirmDialog } from 'vant'
+import { showToast } from '../utils/toast'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
-// 用户信息
-const userAvatar = 'https://img.yzcdn.cn/vant/cat.jpeg'
-const userName = '游客'
+const router = useRouter()
+const userStore = useUserStore()
+
+// 用户信息：从 Pinia 读取，保持响应式
+const userAvatar = computed(() => userStore.displayAvatar)
+const userName = computed(() => userStore.displayName)
 
 // 对话框状态
 const aboutDialogVisible = ref(false)
@@ -91,6 +111,24 @@ const aboutDialogVisible = ref(false)
 // 显示关于我们对话框
 const showAboutDialog = () => {
   aboutDialogVisible.value = true
+}
+
+// 登录/退出
+const handleLoginOrLogout = async () => {
+  if (!userStore.isLoggedIn) {
+    router.push('/login')
+    return
+  }
+  try {
+    await showConfirmDialog({
+      title: '确认退出',
+      message: '确定要退出当前账号吗？'
+    })
+    userStore.logout()
+    showToast('已退出登录')
+  } catch (e) {
+    // 用户取消
+  }
 }
 </script>
 
