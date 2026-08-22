@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 
 // 默认头像，用于未上传头像时
-const DEFAULT_AVATAR = 'https://img.yzcdn.cn/vant/cat.jpeg'
+const DEFAULT_AVATAR = 'https://fastly.jsdelivr.net/npm/@vant/assets/leaf.jpeg'
 
 const STORAGE_KEY_USERS = 'travel_user_list'
 const STORAGE_KEY_CURRENT = 'travel_current_user'

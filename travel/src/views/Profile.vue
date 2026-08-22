@@ -24,23 +24,23 @@
     <div class="menu-section">
       <h3 class="menu-title">我的服务</h3>
       <van-cell-group>
-        <van-cell 
-          title="我的收藏" 
-          is-link 
+        <van-cell
+          title="我的收藏"
+          is-link
           :icon="'star-o'"
-          @click="showToast('功能开发中')"
+          @click="goPage('/profile/favorites')"
         />
-        <van-cell 
-          title="历史记录" 
-          is-link 
+        <van-cell
+          title="历史记录"
+          is-link
           :icon="'history'"
-          @click="showToast('功能开发中')"
+          @click="goPage('/profile/history')"
         />
-        <van-cell 
-          title="设置" 
-          is-link 
+        <van-cell
+          title="设置"
+          is-link
           :icon="'settings'"
-          @click="showToast('功能开发中')"
+          @click="goPage('/profile/settings')"
         />
       </van-cell-group>
     </div>
@@ -108,6 +108,11 @@ const userName = computed(() => userStore.displayName)
 // 对话框状态
 const aboutDialogVisible = ref(false)
 
+// 跳转子页面（我的收藏/历史记录/设置）
+const goPage = (path) => {
+  router.push(path)
+}
+
 // 显示关于我们对话框
 const showAboutDialog = () => {
   aboutDialogVisible.value = true
@@ -116,7 +121,7 @@ const showAboutDialog = () => {
 // 登录/退出
 const handleLoginOrLogout = async () => {
   if (!userStore.isLoggedIn) {
-    router.push('/login')
+    router.push('/auth/login')
     return
   }
   try {

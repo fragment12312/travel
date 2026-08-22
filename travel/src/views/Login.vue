@@ -53,7 +53,7 @@ const OnBack = () => {
 }
 
 const goRegister = () => {
-  router.push('/register')
+  router.push('/auth/register')
 }
 
 const onSubmit = () => {

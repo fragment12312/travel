@@ -97,7 +97,7 @@ const onBack = () => {
 }
 
 const goLogin = () => {
-    router.push('/login')
+    router.push('/auth/login')
 }
 
 // 上传完成后，获取 base64 作为头像保存
