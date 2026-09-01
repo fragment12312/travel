@@ -83,8 +83,10 @@ import { reactive, ref } from 'vue'
 import type { PickerConfirmEventParams } from 'vant'
 import {useRouter} from 'vue-router';
 import { showToast } from '../utils/toast'
+import { useHistoryStore } from '../stores/history'
 
 const router = useRouter()
+const historyStore = useHistoryStore()
 
 const formData = reactive({
   city: '',
@@ -135,6 +137,15 @@ const handleSubmit = () => {
   }
 
   isLoading.value = true
+
+  // 记录到历史记录
+  historyStore.addHistory({
+    type: 'query',
+    title: `${formData.city} · ${formData.days}天 · ${formData.budget}元`,
+    city: formData.city,
+    budget: formData.budget,
+    days: formData.days
+  })
 
   // 提交表单
   router.push({

@@ -50,12 +50,14 @@ import { ref,onMounted,nextTick } from 'vue'
 import { useRouter,useRoute } from 'vue-router'
 import { fetchStream } from '../utils/request'
 import { showToast } from '../utils/toast'
+import { useHistoryStore } from '../stores/history'
 import ChatBubble from '../components/ChatBubble.vue'
 
 
 const router = useRouter()
 const route = useRoute()
 
+const historyStore = useHistoryStore()
 
 const chatContainer = ref(null)
 const messages = ref([])
@@ -90,6 +92,11 @@ const addUserMessage = (content) => {
     role: 'user',
     content,
     timestamp: new Date().toLocaleString()
+  })
+  // 记录到历史记录
+  historyStore.addHistory({
+    type: 'chat',
+    title: content
   })
 }
 

@@ -14,7 +14,7 @@ function loadHistory() {
 }
 
 export const useHistoryStore = defineStore('history', () => {
-  // TODO: 历史记录列表（结构待定：行程参数 + 结果 / 时间戳 + 目的地）
+  // 历史记录列表：{ id, type: 'chat' | 'query', title, time, ...额外字段 }
   const history = ref(loadHistory())
 
   // 持久化到 localStorage
@@ -22,14 +22,26 @@ export const useHistoryStore = defineStore('history', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(val))
   }, { deep: true })
 
-  // TODO: 新增一条历史记录
-  function addHistory(record) {}
+  // 新增一条历史记录
+  function addHistory(record) {
+    const item = {
+      ...record,
+      id: Date.now(),
+      time: new Date().toLocaleString()
+    }
+    history.value.unshift(item)
+    return item
+  }
 
-  // TODO: 删除单条历史
-  function removeHistory(id) {}
+  // 删除单条历史
+  function removeHistory(id) {
+    history.value = history.value.filter((item) => item.id !== id)
+  }
 
-  // TODO: 清空历史
-  function clearHistory() {}
+  // 清空历史
+  function clearHistory() {
+    history.value = []
+  }
 
   return {
     history,
